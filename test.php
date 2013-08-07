@@ -3,11 +3,12 @@
 include("Editable.php");
 
 class B extends Editable
-{
-  private $ciao = "Hello world";   
+{ 
+
 }
 
 $f = new B();
+$f->addPrivateVariable("ciao","Hello World");
 $a = function ()
 {
     echo $this->ciao;
@@ -15,6 +16,10 @@ $a = function ()
 ;
 $f->addPublicFunction("test", $a);
 $f->test();
+
+
+
+
 
 
 

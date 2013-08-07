@@ -29,7 +29,7 @@ class Editable
     public function __call($method, $args)
     {
         //inside access
-        if (get_class($this) == get_class())
+        if ($this->inside())
         {
             if (isset($this->publicFunctions[$method]))
             {
@@ -88,7 +88,7 @@ class Editable
     public function __get($name)
     {
         //inside access
-        if (get_class($this) == get_class())
+        if ($this->inside())
         {
             if (isset($this->privateVariables[$name]))
             {
@@ -122,6 +122,13 @@ class Editable
             return $var;
         }
 
+    }
+    private function inside()
+    {
+        $debug = debug_backtrace();
+        if (isset($debug[2]["function"]) && $debug[2]["function"] == "{closure}" && is_subclass_of($debug[2]['object'], get_class()))
+            return true;
+        return false;
     }
 }
 
