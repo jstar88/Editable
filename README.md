@@ -13,7 +13,7 @@ A class simulating live-coding
 ## Usage
 
 #### Installation
-**Require PHP >= 5.4 **   
+**Require PHP >= 5.4**   
 First of all download **Editable.php** and **pathwork.phar** in the same directory .  
 Now choose the classes that should be editable by this script adding the word `extends Editable`:
 ```php
