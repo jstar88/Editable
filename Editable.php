@@ -1,11 +1,31 @@
 <?php
 
+require "patchwork.phar";
 class Editable
 {
-
-
+    
+    // ------- functions managment -------
     private $privateFunctions = array();
     private $publicFunctions = array();
+    private $closuring = 0;
+    private $replacedFunctions = array();
+
+    private function setPublicFunction($name, callable $f)
+    {
+        if ($f instanceof Closure)
+        {
+            $f = $f->bindTo($this, $this);
+        }
+        $this->publicFunctions[$name] = $f;
+    }
+    private function setPrivateFunction($name, callable $f)
+    {
+        if ($f instanceof Closure)
+        {
+            $f = $f->bindTo($this, $this);
+        }
+        $this->privateFunctions[$name] = $f;
+    }
 
     public function addPublicFunction($name, callable $f)
     {
@@ -13,8 +33,7 @@ class Editable
         {
             throw new Exception("Function \"$name\" already exist");
         }
-        $f = $f->bindTo($this, $this);
-        $this->publicFunctions[$name] = $f;
+        $this->setPublicFunction($name, $f);
     }
     public function addPrivateFunction($name, callable $f)
     {
@@ -22,8 +41,7 @@ class Editable
         {
             throw new Exception("Function \"$name\" already exist");
         }
-        $f = $f->bindTo($this, $this);
-        $this->privateFunctions[$name] = $f;
+        $this->setPrivateFunction($name, $f);
     }
 
     public function __call($method, $args)
@@ -41,30 +59,80 @@ class Editable
             }
             else
             {
-                throw new Exception("Function not exist");
+                throw new Exception("Function \"$method\" not exist");
             }
-            return call_user_func_array($func, $args);
+            $this->closuring++;
+            $return = call_user_func_array($func, $args);
+            $this->closuring--;
+            return $return;
         }
         //outside
         else
         {
-            if (isset($this->privateFunctions[$method]))
-            {
-                throw new Exception("Trying accessing private function outside class");
-            }
             if (isset($this->publicFunctions[$method]))
             {
                 $func = $this->publicFunctions[$method];
             }
+            elseif (isset($this->privateFunctions[$method]) || method_exists($this, $method))
+            {
+                //var_dump(debug_backtrace());die();
+                throw new Exception("Trying accessing private function \"$method\" outside class");
+            }
             else
             {
-                throw new Exception("Function not exist");
+                throw new Exception("Function \"$method\" not exist");
             }
-            return call_user_func_array($func, $args);
+            $this->closuring++;
+            $return = call_user_func_array($func, $args);
+            $this->closuring--;
+            return $return;
         }
     }
 
+    public function replaceFunction(callable $old, callable $new)
+    {
+        $method = $old[1];
+        if (isset($this->privateFunctions[$method]))
+        {
+            $this->setPrivateFunction($method, $new);
+        }
+        elseif (isset($this->publicFunctions[$method]))
+        {
+            $this->setPublicFunction($method, $new);
+        }
+        elseif (method_exists($this, $method))
+        {
+            Patchwork\replace($old, $new);
+            $this->replacedFunctions[$method] = true;
+        }
+        else
+        {
+            throw new Exception("Function \"$method\" not exist");
+        }
+    }
+    public function getMethodsNotInherited()
+    {
+        $class = get_class($this);
+        $classReflection = new ReflectionClass($class);
+        $classMethods = $classReflection->getMethods();
 
+        $classMethodNames = [];
+        foreach ($classMethods as $index => $method)
+        {
+            if ($method->getDeclaringClass()->getName() !== $class)
+            {
+                unset($classMethods[$index]);
+            }
+            else
+            {
+                $classMethodNames[] = $method->getName();
+            }
+        }
+        return $classMethodNames;
+    }
+
+    // ------- variables managment -------
+    
     private $privateVariables = array();
     private $publicVariables = array();
 
@@ -107,13 +175,13 @@ class Editable
         //outside
         else
         {
-            if (isset($this->privateVariables[$name]))
-            {
-                throw new Exception("Trying accessing private variable \"$name\" outside class");
-            }
             if (isset($this->publicVariables[$name]))
             {
                 $var = $this->publicVariables[$name];
+            }
+            elseif (isset($this->privateVariables[$name]) || property_exists($this, $name))
+            {
+                throw new Exception("Trying accessing private variable \"$name\" outside class");
             }
             else
             {
@@ -126,9 +194,7 @@ class Editable
     private function inside()
     {
         $debug = debug_backtrace();
-        if (isset($debug[2]["function"]) && $debug[2]["function"] == "{closure}" && is_subclass_of($debug[2]['object'], get_class()))
-            return true;
-        return false;
+        return $this->closuring > 0 || (isset($debug[12]["function"]) && isset($this->replacedFunctions[$debug[12]["function"]]));
     }
 }
 

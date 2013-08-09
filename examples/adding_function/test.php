@@ -1,11 +1,6 @@
 <?php
-
-include("Editable.php");
-
-class B extends Editable
-{ 
-
-}
+include("../../Editable.php");
+include("B.php");
 
 $f = new B();
 $f->addPrivateVariable("ciao","Hello World");
@@ -16,11 +11,5 @@ $a = function ()
 ;
 $f->addPublicFunction("test", $a);
 $f->test();
-
-
-
-
-
-
 
 ?>
