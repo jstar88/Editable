@@ -3,7 +3,7 @@
 require "patchwork.phar";
 class Editable
 {
-    
+
     // ------- functions managment -------
     private $privateFunctions = array();
     private $publicFunctions = array();
@@ -110,6 +110,13 @@ class Editable
             throw new Exception("Function \"$method\" not exist");
         }
     }
+    public function interceptFunction(callable $target, callable $intercept, $args = array())
+    {
+        Patchwork\replace($target, function () use ($intercept,$args)
+        {
+            call_user_func_array($intercept, $args); Patchwork\pass(); }
+        );
+    }
     public function getMethodsNotInherited()
     {
         $class = get_class($this);
@@ -132,7 +139,7 @@ class Editable
     }
 
     // ------- variables managment -------
-    
+
     private $privateVariables = array();
     private $publicVariables = array();
 
