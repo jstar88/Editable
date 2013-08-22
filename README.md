@@ -40,6 +40,8 @@ Then include in your main script **Editable.php** and use your class with new fe
 * You can't assign the same variable both private and public.
 * If the variable already exist an exception will be thrown.
 
+#### Managment of functions
+
 ###### Adding a function
 ```php
     //private
