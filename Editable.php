@@ -178,25 +178,32 @@ class Editable
     private $privateVariables = array();
     private $publicVariables = array();
 
-    public function addPrivateVariable($name, $value)
+    public function addPrivateVariable($name, $value, $handler = array(), $handlerArgs = array())
     {
         if (isset($this->privateVariables[$name]) || isset($this->publicVariables[$name]))
         {
             throw new Exception("Variable \"$name\" already exist");
         }
-        $this->privateVariables[$name] = $value;
+        $this->privateVariables[$name] = array(
+            'value' => $value,
+            'handler' => $handler,
+            'handlerArgs' => $handlerArgs);
     }
-    public function addPublicVariable($name, $value)
+    public function addPublicVariable($name, $value, $handler)
     {
         if (isset($this->privateVariables[$name]) || isset($this->publicVariables[$name]))
         {
             throw new Exception("Variable \"$name\" already exist");
         }
-        $this->publicVariables[$name] = $value;
+        $this->publicVariables[$name] = array(
+            'value' => $value,
+            'handler' => $handler,
+            'handlerArgs' => $handlerArgs);
     }
 
     public function __get($name)
     {
+        $var = null;
         //inside access
         if ($this->inside())
         {
@@ -212,7 +219,6 @@ class Editable
             {
                 throw new Exception("Variable \"$name\" not exist");
             }
-            return $var;
         }
         //outside
         else
@@ -229,9 +235,48 @@ class Editable
             {
                 throw new Exception("variable \"$name\" not exist");
             }
-            return $var;
         }
-
+        return $var['value'];
+    }
+    public function __set($name, $value)
+    {
+        $var = null;
+        //inside access
+        if ($this->inside())
+        {
+            if (isset($this->privateVariables[$name]))
+            {
+                $var = $this->privateVariables[$name];
+                $this->privateVariables[$name]['value'] = $value;
+            }
+            elseif (isset($this->publicVariables[$name]))
+            {
+                $var = $this->publicVariables[$name];
+                $this->publicVariables[$name]['value'] = $value;
+            }
+            else
+            {
+                throw new Exception("Variable \"$name\" not exist");
+            }
+        }
+        //outside
+        else
+        {
+            if (isset($this->publicVariables[$name]))
+            {
+                $var = $this->publicVariables[$name];
+                $this->publicVariables[$name]['value'] = $value;
+            }
+            elseif (isset($this->privateVariables[$name]) || property_exists($this, $name))
+            {
+                throw new Exception("Trying accessing private variable \"$name\" outside class");
+            }
+            else
+            {
+                throw new Exception("variable \"$name\" not exist");
+            }
+        }
+        call_user_func_array($var['handler'], $var['handlerArgs']);
     }
     private function inside()
     {
