@@ -12,6 +12,7 @@ The class can also intercept calls to functions by calling the code of a given f
 * add public and private functions
 * override public and private functions
 * handle functions call registering interceptors with a callback
+* handle dinamically generated public/private variables changes
 
 ## Usage
 
@@ -42,9 +43,9 @@ Then include in your main script **Editable.php** and use your class with new fe
 * The first argument represent the variable name, the second its value.
 * You can't assign the same variable both private and public.
 * If the variable already exist an exception will be thrown.
-* ```$handler``` is a callable function that will be called on variable changes.
-* ```$handlerArgs``` is an array of arguments of the above function.
-* Variable handling will work only on dinamically generated public/private/protected variables.
+* ```$handler``` is a callable function that will be called on variable changes.(optional)
+* ```$handlerArgs``` is an array of arguments of the above function.(optional)
+* Variable handling will work only on dinamically generated public/private variables.
 
 #### Managment of functions
 
