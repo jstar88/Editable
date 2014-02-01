@@ -35,13 +35,16 @@ Then include in your main script **Editable.php** and use your class with new fe
 ###### Adding a variable
 ```php
     //private
-    $f->addPrivateVariable("var1","Hello World");
+    $f->addPrivateVariable("var1","Hello World",$handler,$handlerArgs);
     //or public
-    $f->addPublicVariable("var2","Hello World 2");
+    $f->addPublicVariable("var2","Hello World 2",$handler,$handlerArgs);
 ```
-* The first argument rappresent the variable name, the second its value.
+* The first argument represent the variable name, the second its value.
 * You can't assign the same variable both private and public.
 * If the variable already exist an exception will be thrown.
+* ```$handler``` is a callable function that will be called on variable changes.
+* ```$handlerArgs``` is an array of arguments of the above function.
+* Variable handling will work only on dinamically generated public/private/protected variables.
 
 #### Managment of functions
 
@@ -52,7 +55,7 @@ Then include in your main script **Editable.php** and use your class with new fe
     //or public
     $f->addPublicFunction("sayHello2",$callback);
 ```
-* The first argument rappresent the function name, the second its definition.
+* The first argument represent the function name, the second its definition.
 * `$callback` must be  [callable](http://php.net/manual/en/language.types.callable.php) or a [closure](http://php.net/manual/en/functions.anonymous.php).
 * You can't assign the same function both private and public.
 * If the function already exist an exception will be thrown.
