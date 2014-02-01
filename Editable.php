@@ -276,7 +276,10 @@ class Editable
                 throw new Exception("variable \"$name\" not exist");
             }
         }
-        call_user_func_array($var['handler'], $var['handlerArgs']);
+        if(is_callable($var['handler']))
+        {
+            call_user_func_array($var['handler'], $var['handlerArgs']);
+        }
     }
     private function inside()
     {
