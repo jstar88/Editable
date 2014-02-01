@@ -1,7 +1,10 @@
 Editable
 ========
 
-A class simulating live-coding
+This class can add functions and variables dynamically to objects.  
+It can add new public and private variables to an object that extends the editable class. The variables may be set to a given initial value.   
+It can also add or replace public and private functions with a new function code.  
+The class can also intercept calls to functions by calling the code of a given function before calling the actual function being intercepted.  
 
 ## Feaures
 
